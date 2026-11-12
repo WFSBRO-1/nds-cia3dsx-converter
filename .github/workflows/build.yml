@@ -1,0 +1,35 @@
+name: Build Nintendo 3DS homebrew
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: devkitpro/devkitarm:latest
+
+    steps:
+      - name: Install 3DS development libraries
+        run: dkp-pacman -Syu --noconfirm 3ds-dev
+
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Build 3DSX
+        run: |
+          make
+          mkdir -p converterNC3
+          cp nds-cia3dsx-converter.3dsx converterNC3/
+
+      - name: Upload build
+        uses: actions/upload-artifact@v4
+        with:
+          name: nds-cia3dsx-converter-v0.1
+          path: |
+            converterNC3/*.3dsx
+            nds-cia3dsx-converter.smdh
